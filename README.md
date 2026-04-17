@@ -4,6 +4,16 @@
 
 ---
 
+## 🛑 JUDGING INSTRUCTIONS (READ FIRST)
+Since this is a native Android application relying on Cloud Firestore, please follow these instructions:
+1. **Cloud Run Link:** As this is a native mobile app (not a web app), we do not have a Cloud Run URL. If the submission portal strictly requires a URL in that box, we have provided our GitHub Repository link or an Appetize.io Live Emulator link there instead.
+2. **Login Credentials:** We have enabled Firebase Phone Authentication. To avoid SMS throttling during grading, please use our pre-configured Hackathon Test Account:
+   - **Phone Number:** `9999999999` (Ensure country code is set to India +91 if dialing manually)
+   - **OTP:** `123456`
+   *(Note: If you are the team member submitting this, please update these numbers if you configured a different test number in your Firebase Console!)*
+
+---
+
 ## 🌟 Key Features
 
 ### 📍 Interactive Indoor Mapping (Powered by MapLibre)
