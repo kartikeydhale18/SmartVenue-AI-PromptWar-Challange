@@ -23,6 +23,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileFragment extends Fragment {
+    
+    private int userPoints = 10;
 
     @Nullable
     @Override
@@ -48,6 +50,19 @@ public class ProfileFragment extends Fragment {
         // Link Tickets → Complete Profile (to add/edit info)
         view.findViewById(R.id.rowLinkTickets).setOnClickListener(v ->
                 startActivity(new Intent(getActivity(), CompleteProfileActivity.class)));
+
+        // Report Crowd
+        View btnReportCrowd = view.findViewById(R.id.rowReportCrowd);
+        TextView tvRewardText = view.findViewById(R.id.tvRewardText);
+        if (btnReportCrowd != null) {
+            btnReportCrowd.setOnClickListener(v -> {
+                userPoints += 10;
+                if (tvRewardText != null) {
+                    tvRewardText.setText(userPoints + " points for crowd reporting");
+                }
+                Toast.makeText(getContext(), "+10 Points! Crowd reported successfully.", Toast.LENGTH_SHORT).show();
+            });
+        }
                 
         // Dark Mode Toggle
         SwitchMaterial switchDarkMode = view.findViewById(R.id.switchDarkMode);

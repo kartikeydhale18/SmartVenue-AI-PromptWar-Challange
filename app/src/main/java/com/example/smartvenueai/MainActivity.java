@@ -119,22 +119,19 @@ public class MainActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show());
         }
 
-        findViewById(R.id.drawerAppearance).setOnClickListener(v -> {
-            int currentNightMode = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-            if (currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
-                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
-            } else {
-                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
-            }
+        findViewById(R.id.drawerSettings).setOnClickListener(v -> {
             drawerLayout.closeDrawers();
+            loadFragment(new ProfileFragment());
+            bottomNav.setSelectedItemId(R.id.nav_profile);
         });
 
-        // ── System ───────────────────────────────────────────────────
-        findViewById(R.id.drawerSettings).setOnClickListener(v ->
-                Toast.makeText(this, "Settings coming soon!", Toast.LENGTH_SHORT).show());
-
-        findViewById(R.id.drawerHelp).setOnClickListener(v ->
-                Toast.makeText(this, "Help & Support coming soon!", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.drawerHelp).setOnClickListener(v -> {
+            drawerLayout.closeDrawers();
+            Intent intent = new Intent(Intent.ACTION_SENDTO);
+            intent.setData(android.net.Uri.parse("mailto:dhalekartikey@gmail.com"));
+            intent.putExtra(Intent.EXTRA_SUBJECT, "SmartVenue AI Support Request");
+            startActivity(Intent.createChooser(intent, "Send Support Email"));
+        });
 
         // Logout
         findViewById(R.id.drawerLogout).setOnClickListener(v -> {

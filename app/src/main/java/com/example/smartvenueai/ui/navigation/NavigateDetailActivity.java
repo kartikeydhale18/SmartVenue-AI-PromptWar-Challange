@@ -89,10 +89,10 @@ public class NavigateDetailActivity extends AppCompatActivity {
     
     private void drawRoute(Style style) {
         java.util.List<org.maplibre.geojson.Point> routeCoordinates = new java.util.ArrayList<>();
-        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8258, 18.9378)); // Gate 3
-        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8250, 18.9375));
-        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8243, 18.9380));
-        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8248, 18.9388)); // Concession
+        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8258, 18.9380)); // Gate A
+        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8254, 18.9381)); // Inside curve
+        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8251, 18.9385)); // Mid-concourse
+        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8251, 18.9388)); // Concession
 
         org.maplibre.geojson.LineString lineString = org.maplibre.geojson.LineString.fromLngLats(routeCoordinates);
         org.maplibre.geojson.Feature routeFeature = org.maplibre.geojson.Feature.fromGeometry(lineString);

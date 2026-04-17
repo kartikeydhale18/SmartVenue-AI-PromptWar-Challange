@@ -201,15 +201,15 @@ public class MapFragment extends Fragment {
         // Generating cluster of dummy crowd density data at West Concourse & South Gate
         List<Feature> crowdPoints = new ArrayList<>();
         // Cluster 1 (West Concourse / Concession)
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8248, 18.9388)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8249, 18.9387)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8247, 18.9389)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8248, 18.9387)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8249, 18.9388)));
-        // Cluster 2 (South Gate)
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8258, 18.9378)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8257, 18.9379)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8259, 18.9377)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8251, 18.9388)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8252, 18.9387)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8250, 18.9389)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8251, 18.9387)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8252, 18.9388)));
+        // Cluster 2 (South Gate A)
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8258, 18.9380)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8257, 18.9381)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8259, 18.9379)));
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(crowdPoints);
         GeoJsonSource source = new GeoJsonSource(HEATMAP_SOURCE_ID, featureCollection);
@@ -226,18 +226,23 @@ public class MapFragment extends Fragment {
     }
     
     private void addPoiLayer(Style style) {
-        // Dummy POIs around Wankhede Stadium (Expanded outward to hit stands)
-        Feature concession = Feature.fromGeometry(Point.fromLngLat(72.8248, 18.9388));
+        Feature concession = Feature.fromGeometry(Point.fromLngLat(72.8251, 18.9388));
         concession.addStringProperty("title", "Food Stall 1 (Concession)");
         
-        Feature restroom = Feature.fromGeometry(Point.fromLngLat(72.8268, 18.9388));
+        Feature restroom = Feature.fromGeometry(Point.fromLngLat(72.8265, 18.9389));
         restroom.addStringProperty("title", "Restroom (Level 1)");
         
-        Feature exitGate = Feature.fromGeometry(Point.fromLngLat(72.8258, 18.9378));
-        exitGate.addStringProperty("title", "Gate 3 (Exit)");
+        Feature gateA = Feature.fromGeometry(Point.fromLngLat(72.8258, 18.9380));
+        gateA.addStringProperty("title", "Gate A");
+
+        Feature gateB = Feature.fromGeometry(Point.fromLngLat(72.8262, 18.9385));
+        gateB.addStringProperty("title", "Gate B");
+
+        Feature gateC = Feature.fromGeometry(Point.fromLngLat(72.8258, 18.9396));
+        gateC.addStringProperty("title", "Gate C");
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(new Feature[]{
-                concession, restroom, exitGate
+                concession, restroom, gateA, gateB, gateC
         });
 
         GeoJsonSource source = new GeoJsonSource(POI_SOURCE_ID, featureCollection);

@@ -23,6 +23,20 @@ import org.maplibre.android.maps.Style;
 public class NavigationFragment extends Fragment {
 
     private MapView mapView;
+    private android.widget.TextView tvOrigin;
+    private android.widget.TextView tvDestination;
+    
+    private final String[] locationNames = new String[]{
+            "Gate A", "Gate B", "Gate C", "Food Stall 1 (Concession)", "Restroom (Level 1)"
+    };
+    
+    private final java.util.Map<String, org.maplibre.geojson.Point> locations = new java.util.HashMap<String, org.maplibre.geojson.Point>() {{
+        put("Gate A", org.maplibre.geojson.Point.fromLngLat(72.8258, 18.9380));
+        put("Gate B", org.maplibre.geojson.Point.fromLngLat(72.8262, 18.9385));
+        put("Gate C", org.maplibre.geojson.Point.fromLngLat(72.8258, 18.9396));
+        put("Food Stall 1 (Concession)", org.maplibre.geojson.Point.fromLngLat(72.8251, 18.9388));
+        put("Restroom (Level 1)", org.maplibre.geojson.Point.fromLngLat(72.8265, 18.9389));
+    }};
 
     @Nullable
     @Override
@@ -38,22 +52,20 @@ public class NavigationFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Route swapping logic
-        final boolean[] isReversed = {false};
-        android.widget.TextView tvOrigin = view.findViewById(R.id.tvOrigin);
-        android.widget.TextView tvDestination = view.findViewById(R.id.tvDestination);
+        tvOrigin = view.findViewById(R.id.tvOrigin);
+        tvDestination = view.findViewById(R.id.tvDestination);
 
-        tvOrigin.setText("Gate 3 (Exit)");
+        tvOrigin.setText("Gate A");
         tvDestination.setText("Food Stall 1 (Concession)");
         
+        tvOrigin.setOnClickListener(v -> showLocationPicker(tvOrigin));
+        tvDestination.setOnClickListener(v -> showLocationPicker(tvDestination));
+        
         view.findViewById(R.id.btnSwapRoute).setOnClickListener(v -> {
-            isReversed[0] = !isReversed[0];
-            if (isReversed[0]) {
-                tvOrigin.setText("Food Stall 1 (Concession)");
-                tvDestination.setText("Gate 3 (Exit)");
-            } else {
-                tvOrigin.setText("Gate 3 (Exit)");
-                tvDestination.setText("Food Stall 1 (Concession)");
-            }
+            String temp = tvOrigin.getText().toString();
+            tvOrigin.setText(tvDestination.getText().toString());
+            tvDestination.setText(temp);
+            updateRoute();
             Toast.makeText(getContext(), "Route swapped!", Toast.LENGTH_SHORT).show();
         });
 
@@ -110,26 +122,68 @@ public class NavigationFragment extends Fragment {
         if (mapView != null) mapView.onSaveInstanceState(outState);
     }
     
-    private void drawRoute(Style style) {
-        java.util.List<org.maplibre.geojson.Point> routeCoordinates = new java.util.ArrayList<>();
-        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8258, 18.9378)); // Gate 3
-        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8250, 18.9375));
-        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8243, 18.9380));
-        routeCoordinates.add(org.maplibre.geojson.Point.fromLngLat(72.8248, 18.9388)); // Concession
+    private void showLocationPicker(android.widget.TextView targetView) {
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Select Location")
+                .setItems(locationNames, (dialog, which) -> {
+                    targetView.setText(locationNames[which]);
+                    updateRoute();
+                })
+                .show();
+    }
+    
+    private void updateRoute() {
+        if (mapView != null) {
+            mapView.getMapAsync(map -> {
+                if (map.getStyle() != null) {
+                    drawRoute(map.getStyle());
+                }
+            });
+        }
+    }
 
-        org.maplibre.geojson.LineString lineString = org.maplibre.geojson.LineString.fromLngLats(routeCoordinates);
+    private void drawRoute(Style style) {
+        String origin = tvOrigin.getText().toString();
+        String dest = tvDestination.getText().toString();
+        
+        java.util.List<org.maplibre.geojson.Point> coords = new java.util.ArrayList<>();
+        if (!locations.containsKey(origin) || !locations.containsKey(dest)) return;
+        
+        if (origin.equals("Gate A") && dest.contains("Food Stall")) {
+            coords.add(locations.get(origin));
+            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8254, 18.9381));
+            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8251, 18.9385));
+            coords.add(locations.get(dest));
+        } else if (origin.contains("Food Stall") && dest.equals("Gate A")) {
+            coords.add(locations.get(origin));
+            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8251, 18.9385));
+            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8254, 18.9381));
+            coords.add(locations.get(dest));
+        } else {
+            coords.add(locations.get(origin));
+            // Add a mid-point around the center of the stadium for a natural curved visual
+            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8258, 18.9388));
+            coords.add(locations.get(dest));
+        }
+
+        org.maplibre.geojson.LineString lineString = org.maplibre.geojson.LineString.fromLngLats(coords);
         org.maplibre.geojson.Feature routeFeature = org.maplibre.geojson.Feature.fromGeometry(lineString);
 
-        org.maplibre.android.style.sources.GeoJsonSource source = new org.maplibre.android.style.sources.GeoJsonSource("route-source", routeFeature);
-        style.addSource(source);
+        org.maplibre.android.style.sources.GeoJsonSource source = style.getSourceAs("route-source");
+        if (source != null) {
+            source.setGeoJson(routeFeature);
+        } else {
+            source = new org.maplibre.android.style.sources.GeoJsonSource("route-source", routeFeature);
+            style.addSource(source);
 
-        org.maplibre.android.style.layers.LineLayer routeLayer = new org.maplibre.android.style.layers.LineLayer("route-layer", "route-source");
-        routeLayer.setProperties(
-                org.maplibre.android.style.layers.PropertyFactory.lineCap(org.maplibre.android.style.layers.Property.LINE_CAP_ROUND),
-                org.maplibre.android.style.layers.PropertyFactory.lineJoin(org.maplibre.android.style.layers.Property.LINE_JOIN_ROUND),
-                org.maplibre.android.style.layers.PropertyFactory.lineWidth(5f),
-                org.maplibre.android.style.layers.PropertyFactory.lineColor(android.graphics.Color.parseColor("#1565C0"))
-        );
-        style.addLayer(routeLayer);
+            org.maplibre.android.style.layers.LineLayer routeLayer = new org.maplibre.android.style.layers.LineLayer("route-layer", "route-source");
+            routeLayer.setProperties(
+                    org.maplibre.android.style.layers.PropertyFactory.lineCap(org.maplibre.android.style.layers.Property.LINE_CAP_ROUND),
+                    org.maplibre.android.style.layers.PropertyFactory.lineJoin(org.maplibre.android.style.layers.Property.LINE_JOIN_ROUND),
+                    org.maplibre.android.style.layers.PropertyFactory.lineWidth(5f),
+                    org.maplibre.android.style.layers.PropertyFactory.lineColor(android.graphics.Color.parseColor("#1565C0"))
+            );
+            style.addLayer(routeLayer);
+        }
     }
 }

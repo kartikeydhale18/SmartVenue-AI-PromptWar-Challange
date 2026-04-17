@@ -248,77 +248,55 @@
                     android:layout_marginBottom="8dp"
                     android:layout_marginTop="8dp" />
 
-                <!-- Recent Routes -->
+                <!-- Report Crowd Congestion -->
                 <LinearLayout
+                    android:id="@+id/rowReportCrowd"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:paddingTop="10dp"
-                    android:paddingBottom="10dp">
+                    android:paddingBottom="10dp"
+                    android:background="?attr/selectableItemBackground">
 
                     <ImageView
                         android:layout_width="22dp"
                         android:layout_height="22dp"
-                        android:src="@android:drawable/ic_menu_directions"
-                        android:tint="@color/text_primary"
-                        android:contentDescription="Routes"
+                        android:src="@android:drawable/ic_dialog_alert"
+                        android:tint="@color/logout_red"
+                        android:contentDescription="Report Crowd"
                         android:layout_marginEnd="14dp" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Recent routes"
+                        android:text="Report Crowd Congestion"
                         android:textColor="@color/text_primary"
-                        android:textSize="15sp" />
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
 
-                    <TextView
+                    <androidx.cardview.widget.CardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1 Sec 2"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                        app:cardCornerRadius="6dp"
+                        app:cardBackgroundColor="@color/logout_red"
+                        app:cardElevation="0dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="+10 Pts"
+                            android:textColor="@color/white"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:padding="6dp" />
+
+                    </androidx.cardview.widget.CardView>
 
                 </LinearLayout>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" />
 
-                <!-- Visited Concessions -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingTop="10dp"
-                    android:paddingBottom="10dp">
-
-                    <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:src="@android:drawable/ic_menu_mylocation"
-                        android:tint="@color/text_primary"
-                        android:contentDescription="Concessions"
-                        android:layout_marginEnd="14dp" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Visited concessions"
-                        android:textColor="@color/text_primary"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="1 Sec 2"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
-
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="8dp" android:background="@color/surface" />
 
                 <!-- My Rewards Section -->
                 <TextView
@@ -348,6 +326,7 @@
                         android:layout_marginEnd="14dp" />
 
                     <TextView
+                        android:id="@+id/tvRewardText"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
