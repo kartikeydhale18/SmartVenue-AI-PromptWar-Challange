@@ -46,6 +46,16 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        // Load points from preferences
+        if (getActivity() != null) {
+            android.content.SharedPreferences prefs = getActivity().getSharedPreferences("SmartVenuePrefs", android.content.Context.MODE_PRIVATE);
+            userPoints = prefs.getInt("userPoints", 10);
+            TextView tvRewardText = view.findViewById(R.id.tvRewardText);
+            if (tvRewardText != null) {
+                tvRewardText.setText(userPoints + " points for crowd reporting");
+            }
+        }
+
         // Load real user data from Firestore
         loadUserProfile(view);
 
@@ -125,6 +135,10 @@ public class ProfileFragment extends Fragment {
         db.collection("crowd_reports").add(report)
                 .addOnSuccessListener(docRef -> {
                     userPoints += 10;
+                    if (getActivity() != null) {
+                        getActivity().getSharedPreferences("SmartVenuePrefs", android.content.Context.MODE_PRIVATE)
+                                .edit().putInt("userPoints", userPoints).apply();
+                    }
                     if (getView() != null) {
                         TextView tvRewardText = getView().findViewById(R.id.tvRewardText);
                         if (tvRewardText != null) {
