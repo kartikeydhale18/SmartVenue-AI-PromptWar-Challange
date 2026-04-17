@@ -61,6 +61,11 @@ public class LoginActivity extends AppCompatActivity {
         btnVerifyOtp  = findViewById(R.id.btnVerifyOtp);
         progressBar   = findViewById(R.id.progressBar);
 
+        // --- HACKATHON JUDGE PREFILL ---
+        // Pre-filling test credentials so judges don't have to look for them!
+        etPhoneNumber.setText("9999999999");
+        etOtpCode.setText("123456");
+
         btnSendOtp.setOnClickListener(v -> sendOtp());
         btnVerifyOtp.setOnClickListener(v -> verifyOtp());
     }

@@ -6,7 +6,7 @@
 
 ## 🛑 JUDGING INSTRUCTIONS (READ FIRST)
 Since this is a native Android application relying on Cloud Firestore, please follow these instructions:
-1. **Cloud Run Link:** As this is a native mobile app (not a web app), we do not have a Cloud Run URL. If the submission portal strictly requires a URL in that box, we have provided our GitHub Repository link or an Appetize.io Live Emulator link there instead.
+1. **Live Preview Link:** As this is a native mobile app (not a web app), we do not have a Cloud Run URL. Instead, we have provided an interactive **Appetize.io Live Emulator link** directly in the submission box. Click that link to interact with a full Android emulation of SmartVenue AI right in your browser!
 2. **Login Credentials:** We have enabled Firebase Phone Authentication. To avoid SMS throttling during grading, please use our pre-configured Hackathon Test Account:
    - **Phone Number:** `9999999999` (Ensure country code is set to India +91 if dialing manually)
    - **OTP:** `123456`
@@ -51,6 +51,7 @@ Since this is a native Android application relying on Cloud Firestore, please fo
    - Create a project on the [Firebase Console](https://console.firebase.google.com/).
    - Add your Android app package name.
    - Download the generated `google-services.json` file and place it rigidly inside the `app/` directory (Note: This is strictly ignored by version control for security).
+   - **Important for Authentication:** Go to **Authentication > Sign-in method > Phone**. Under the **Phone numbers for testing** dropdown, add `+91 9999999999` with Verification code `123456`. This ensures the pre-filled Hackathon Demo login bypasses physical SMS limits.
 3. **Database Configuration:**
    - Enable **Cloud Firestore** and deploy in Test Mode (or apply necessary security policies to the `users`, `crowd_reports`, and `queues` collections).
 4. **Build & Run:**
