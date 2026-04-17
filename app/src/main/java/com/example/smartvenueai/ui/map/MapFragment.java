@@ -124,8 +124,8 @@ public class MapFragment extends Fragment {
                             @Override
                             public void onStyleLoaded(@NonNull Style style) {
                                 addMarkerIconToStyle(style);
-                                addHeatmapLayer(style);
                                 addPoiLayer(style);
+                                addHeatmapLayer(style);
                                 enableLocationComponent(style);
                             }
                         });
