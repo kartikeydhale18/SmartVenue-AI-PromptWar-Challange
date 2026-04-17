@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Brand -->
+    <color name="primary">#1565C0</color>
+    <color name="primary_dark">#003c8f</color>
+    <color name="primary_light">#5E92F3</color>
+    <color name="primary_text_on">#FFFFFF</color>
+
+    <!-- Backgrounds -->
+    <color name="background">#FFFFFF</color>
+    <color name="surface">#F5F5F5</color>
+    <color name="surface_card">#FFFFFF</color>
+
+    <!-- Text -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#616161</color>
+    <color name="text_hint">#9E9E9E</color>
+    <color name="text_disabled">#BDBDBD</color>
+
+    <!-- Divider -->
+    <color name="divider">#E0E0E0</color>
+
+    <!-- Alert Colors -->
+    <color name="alert_critical">#B71C1C</color>
+    <color name="alert_critical_bg">#FFCDD2</color>
+    <color name="alert_orange">#E65100</color>
+    <color name="alert_orange_bg">#FFE0B2</color>
+    <color name="alert_yellow">#F57F17</color>
+    <color name="alert_yellow_bg">#FFF9C4</color>
+    <color name="alert_green">#1B5E20</color>
+    <color name="alert_green_bg">#C8E6C9</color>
+    <color name="alert_blue">#0D47A1</color>
+    <color name="alert_blue_bg">#BBDEFB</color>
+
+    <!-- Trend -->
+    <color name="trend_up">#D32F2F</color>
+    <color name="trend_down">#2E7D32</color>
+    <color name="trend_neutral">#757575</color>
+
+    <!-- Misc -->
+    <color name="logout_red">#D32F2F</color>
+    <color name="toggle_on">#2E7D32</color>
+    <color name="bar_chart_blue">#1565C0</color>
+    <color name="bar_chart_gray">#BDBDBD</color>
+    <color name="nav_active">#1565C0</color>
+    <color name="nav_inactive">#757575</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="overlay_dark">#80000000</color>
+    <color name="avatar_bg">#1565C0</color>
+    <color name="avatar_placeholder">#9E9E9E</color>
+</resources>

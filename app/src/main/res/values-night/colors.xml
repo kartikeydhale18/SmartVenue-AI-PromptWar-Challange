@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Backgrounds -->
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="surface_card">#1E1E1E</color>
+
+    <!-- Text -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#BDBDBD</color>
+    <color name="text_hint">#9E9E9E</color>
+
+    <!-- Divider -->
+    <color name="divider">#424242</color>
+
+    <!-- Flipped raw colors for simple widespread Night Mode applicability -->
+    <color name="white">#1E1E1E</color>
+    <color name="black">#FFFFFF</color>
+    
+    <!-- We leave the primary brand colors (blue) the same -->
+</resources>

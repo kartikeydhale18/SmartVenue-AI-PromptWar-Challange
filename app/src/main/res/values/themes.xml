@@ -1,0 +1,26 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.SmartVenueAI" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/primary_light</item>
+        <item name="colorSurface">@color/surface_card</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <!-- Hide the active indicator pill on BottomNavigationView -->
+        <item name="bottomNavigationStyle">@style/SmartVenue.BottomNav</item>
+    </style>
+
+    <style name="Theme.SmartVenueAI" parent="Base.Theme.SmartVenueAI" />
+
+    <!-- BottomNavigationView: no pill indicator, flat style -->
+    <style name="SmartVenue.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemActiveIndicatorStyle">@style/SmartVenue.BottomNav.ActiveIndicator</item>
+    </style>
+
+    <style name="SmartVenue.BottomNav.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.None</item>
+    </style>
+
+</resources>

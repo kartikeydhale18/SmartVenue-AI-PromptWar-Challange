@@ -1,0 +1,297 @@
+package com.example.smartvenueai.ui.map;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+
+import com.example.smartvenueai.MainActivity;
+import com.example.smartvenueai.R;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.maplibre.android.MapLibre;
+import org.maplibre.android.camera.CameraPosition;
+import org.maplibre.android.camera.CameraUpdateFactory;
+import org.maplibre.android.geometry.LatLng;
+import org.maplibre.android.location.LocationComponent;
+import org.maplibre.android.location.LocationComponentActivationOptions;
+import org.maplibre.android.location.modes.CameraMode;
+import org.maplibre.android.location.modes.RenderMode;
+import org.maplibre.android.maps.MapLibreMap;
+import org.maplibre.android.maps.MapView;
+import org.maplibre.android.maps.OnMapReadyCallback;
+import org.maplibre.android.maps.Style;
+import org.maplibre.android.style.layers.HeatmapLayer;
+import org.maplibre.android.style.layers.Property;
+import org.maplibre.android.style.layers.PropertyFactory;
+import org.maplibre.android.style.layers.SymbolLayer;
+import org.maplibre.android.style.sources.GeoJsonSource;
+import org.maplibre.geojson.Feature;
+import org.maplibre.geojson.FeatureCollection;
+import org.maplibre.geojson.Point;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MapFragment extends Fragment {
+
+    private MapView mapView;
+    private MapLibreMap mapLibreMap;
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+    
+    private static final String MARKER_IMAGE_ID = "MARKER_IMAGE_ID";
+    private static final String POI_SOURCE_ID = "POI_SOURCE_ID";
+    private static final String POI_LAYER_ID = "POI_LAYER_ID";
+    private static final String HEATMAP_SOURCE_ID = "HEATMAP_SOURCE_ID";
+    private static final String HEATMAP_LAYER_ID = "HEATMAP_LAYER_ID";
+    private static final LatLng DEFAULT_CENTER = new LatLng(18.9388, 72.8258); // Wankhede Stadium
+    
+    private boolean isHeatmapVisible = true;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted && mapLibreMap != null && mapLibreMap.getStyle() != null) {
+                        enableLocationComponent(mapLibreMap.getStyle());
+                        // Attempt to animate immediately if location becomes available
+                        android.location.Location loc = mapLibreMap.getLocationComponent().getLastKnownLocation();
+                        if (loc != null) {
+                            mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                                    new LatLng(loc.getLatitude(), loc.getLongitude()), 16.5));
+                        }
+                    } else if (!isGranted) {
+                        Toast.makeText(getContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        // MapLibre must be initialized before MapView is inflated
+        MapLibre.getInstance(requireContext());
+        return inflater.inflate(R.layout.fragment_map, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Hamburger menu button opens the drawer
+        ImageButton btnOpenDrawer = view.findViewById(R.id.btnOpenDrawer);
+        btnOpenDrawer.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).openDrawer();
+            }
+        });
+
+        // MapView setup
+        mapView = view.findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapLibreMap maplibreMap) {
+                MapFragment.this.mapLibreMap = maplibreMap;
+                
+                // Set initial camera position to Wankhede Stadium
+                maplibreMap.setCameraPosition(new CameraPosition.Builder()
+                        .target(DEFAULT_CENTER)
+                        .zoom(16.5)
+                        .build());
+                        
+                maplibreMap.setStyle("https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+                        new Style.OnStyleLoaded() {
+                            @Override
+                            public void onStyleLoaded(@NonNull Style style) {
+                                addMarkerIconToStyle(style);
+                                addHeatmapLayer(style);
+                                addPoiLayer(style);
+                                enableLocationComponent(style);
+                            }
+                        });
+                        
+                maplibreMap.addOnMapClickListener(new MapLibreMap.OnMapClickListener() {
+                    @Override
+                    public boolean onMapClick(@NonNull LatLng point) {
+                        return handleMapClick(point);
+                    }
+                });
+            }
+        });
+
+        // My Location FAB
+        FloatingActionButton fabMyLocation = view.findViewById(R.id.fabMyLocation);
+        fabMyLocation.setOnClickListener(v -> {
+            if (mapLibreMap != null && mapLibreMap.getLocationComponent().isLocationComponentActivated()) {
+                android.location.Location location = mapLibreMap.getLocationComponent().getLastKnownLocation();
+                if (location != null) {
+                    mapLibreMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(location.getLatitude(), location.getLongitude()), 16.5));
+                } else {
+                    Toast.makeText(getContext(), "Location not available yet", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getContext(), "Please enable location access", Toast.LENGTH_SHORT).show();
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+        });
+        
+        // Heatmap Toggle FAB
+        FloatingActionButton fabHeatmap = view.findViewById(R.id.fabHeatmap);
+        fabHeatmap.setOnClickListener(v -> {
+            if (mapLibreMap != null && mapLibreMap.getStyle() != null) {
+                HeatmapLayer layer = mapLibreMap.getStyle().getLayerAs(HEATMAP_LAYER_ID);
+                if (layer != null) {
+                    isHeatmapVisible = !isHeatmapVisible;
+                    layer.setProperties(PropertyFactory.visibility(
+                            isHeatmapVisible ? Property.VISIBLE : Property.NONE));
+                    Toast.makeText(getContext(), isHeatmapVisible ? "Heatmap ON" : "Heatmap OFF", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    @SuppressWarnings({"MissingPermission"})
+    private void enableLocationComponent(@NonNull Style loadedMapStyle) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            LocationComponent locationComponent = mapLibreMap.getLocationComponent();
+            locationComponent.activateLocationComponent(
+                    LocationComponentActivationOptions.builder(requireContext(), loadedMapStyle).build());
+            locationComponent.setLocationComponentEnabled(true);
+            locationComponent.setCameraMode(CameraMode.NONE);
+            locationComponent.setRenderMode(RenderMode.COMPASS);
+        }
+        // If not granted, we do NOT ask here on startup. We wait for the FAB click.
+    }
+    
+    private void addMarkerIconToStyle(Style style) {
+        Drawable drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_marker);
+        if (drawable != null) {
+            Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                    drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+            style.addImage(MARKER_IMAGE_ID, bitmap);
+        }
+    }
+    
+    private void addHeatmapLayer(Style style) {
+        // Generating cluster of dummy crowd density data at West Concourse & South Gate
+        List<Feature> crowdPoints = new ArrayList<>();
+        // Cluster 1 (West Concourse / Concession)
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8248, 18.9388)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8249, 18.9387)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8247, 18.9389)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8248, 18.9387)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8249, 18.9388)));
+        // Cluster 2 (South Gate)
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8258, 18.9378)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8257, 18.9379)));
+        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8259, 18.9377)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(crowdPoints);
+        GeoJsonSource source = new GeoJsonSource(HEATMAP_SOURCE_ID, featureCollection);
+        style.addSource(source);
+
+        HeatmapLayer heatmapLayer = new HeatmapLayer(HEATMAP_LAYER_ID, HEATMAP_SOURCE_ID);
+        heatmapLayer.setProperties(
+                PropertyFactory.heatmapRadius(40f),
+                PropertyFactory.heatmapWeight(1.0f),
+                PropertyFactory.heatmapIntensity(0.8f),
+                PropertyFactory.heatmapOpacity(0.9f),
+                // Custom color gradient for heatmap density (0 to 1)
+                PropertyFactory.heatmapColor(
+                        org.maplibre.android.style.expressions.Expression.interpolate(
+                                org.maplibre.android.style.expressions.Expression.linear(),
+                                org.maplibre.android.style.expressions.Expression.heatmapDensity(),
+                                org.maplibre.android.style.expressions.Expression.stop(0, org.maplibre.android.style.expressions.Expression.rgba(33, 102, 172, 0)),
+                                org.maplibre.android.style.expressions.Expression.stop(0.2, org.maplibre.android.style.expressions.Expression.rgb(103, 169, 207)),
+                                org.maplibre.android.style.expressions.Expression.stop(0.4, org.maplibre.android.style.expressions.Expression.rgb(209, 229, 240)),
+                                org.maplibre.android.style.expressions.Expression.stop(0.6, org.maplibre.android.style.expressions.Expression.rgb(253, 219, 199)),
+                                org.maplibre.android.style.expressions.Expression.stop(0.8, org.maplibre.android.style.expressions.Expression.rgb(239, 138, 98)),
+                                org.maplibre.android.style.expressions.Expression.stop(1, org.maplibre.android.style.expressions.Expression.rgb(178, 24, 43))
+                        )
+                )
+        );
+        style.addLayerBelow(heatmapLayer, POI_LAYER_ID);
+    }
+    
+    private void addPoiLayer(Style style) {
+        // Dummy POIs around Wankhede Stadium (Expanded outward to hit stands)
+        Feature concession = Feature.fromGeometry(Point.fromLngLat(72.8248, 18.9388));
+        concession.addStringProperty("title", "Food Stall 1 (Concession)");
+        
+        Feature restroom = Feature.fromGeometry(Point.fromLngLat(72.8268, 18.9388));
+        restroom.addStringProperty("title", "Restroom (Level 1)");
+        
+        Feature exitGate = Feature.fromGeometry(Point.fromLngLat(72.8258, 18.9378));
+        exitGate.addStringProperty("title", "Gate 3 (Exit)");
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(new Feature[]{
+                concession, restroom, exitGate
+        });
+
+        GeoJsonSource source = new GeoJsonSource(POI_SOURCE_ID, featureCollection);
+        style.addSource(source);
+
+        SymbolLayer symbolLayer = new SymbolLayer(POI_LAYER_ID, POI_SOURCE_ID)
+                .withProperties(
+                        PropertyFactory.iconImage(MARKER_IMAGE_ID),
+                        PropertyFactory.iconAllowOverlap(true),
+                        PropertyFactory.iconIgnorePlacement(true),
+                        PropertyFactory.iconOffset(new Float[]{0f, -18f})
+                );
+        style.addLayer(symbolLayer);
+    }
+    
+    private boolean handleMapClick(LatLng point) {
+        PointF screenPoint = mapLibreMap.getProjection().toScreenLocation(point);
+        List<Feature> features = mapLibreMap.queryRenderedFeatures(screenPoint, POI_LAYER_ID);
+        if (!features.isEmpty()) {
+            Feature feature = features.get(0);
+            String title = feature.getStringProperty("title");
+            if (title != null) {
+                Toast.makeText(getContext(), title, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ── MapView lifecycle forwarding ──
+    @Override public void onStart()  { super.onStart();  if (mapView != null) mapView.onStart(); }
+    @Override public void onResume() { super.onResume(); if (mapView != null) mapView.onResume(); }
+    @Override public void onPause()  { super.onPause();  if (mapView != null) mapView.onPause(); }
+    @Override public void onStop()   { super.onStop();   if (mapView != null) mapView.onStop(); }
+    @Override public void onLowMemory() { super.onLowMemory(); if (mapView != null) mapView.onLowMemory(); }
+    @Override public void onDestroyView() {
+        super.onDestroyView();
+        if (mapView != null) { mapView.onDestroy(); mapView = null; }
+    }
+    @Override public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mapView != null) mapView.onSaveInstanceState(outState);
+    }
+}
