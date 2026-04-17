@@ -36,7 +36,7 @@ import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.OnMapReadyCallback;
 import org.maplibre.android.maps.Style;
-import org.maplibre.android.style.layers.HeatmapLayer;
+import org.maplibre.android.style.layers.CircleLayer;
 import org.maplibre.android.style.layers.Property;
 import org.maplibre.android.style.layers.PropertyFactory;
 import org.maplibre.android.style.layers.SymbolLayer;
@@ -160,7 +160,7 @@ public class MapFragment extends Fragment {
         FloatingActionButton fabHeatmap = view.findViewById(R.id.fabHeatmap);
         fabHeatmap.setOnClickListener(v -> {
             if (mapLibreMap != null && mapLibreMap.getStyle() != null) {
-                HeatmapLayer layer = mapLibreMap.getStyle().getLayerAs(HEATMAP_LAYER_ID);
+                CircleLayer layer = mapLibreMap.getStyle().getLayerAs(HEATMAP_LAYER_ID);
                 if (layer != null) {
                     isHeatmapVisible = !isHeatmapVisible;
                     layer.setProperties(PropertyFactory.visibility(
@@ -215,25 +215,12 @@ public class MapFragment extends Fragment {
         GeoJsonSource source = new GeoJsonSource(HEATMAP_SOURCE_ID, featureCollection);
         style.addSource(source);
 
-        HeatmapLayer heatmapLayer = new HeatmapLayer(HEATMAP_LAYER_ID, HEATMAP_SOURCE_ID);
+        CircleLayer heatmapLayer = new CircleLayer(HEATMAP_LAYER_ID, HEATMAP_SOURCE_ID);
         heatmapLayer.setProperties(
-                PropertyFactory.heatmapRadius(40f),
-                PropertyFactory.heatmapWeight(1.0f),
-                PropertyFactory.heatmapIntensity(0.8f),
-                PropertyFactory.heatmapOpacity(0.9f),
-                // Custom color gradient for heatmap density (0 to 1)
-                PropertyFactory.heatmapColor(
-                        org.maplibre.android.style.expressions.Expression.interpolate(
-                                org.maplibre.android.style.expressions.Expression.linear(),
-                                org.maplibre.android.style.expressions.Expression.heatmapDensity(),
-                                org.maplibre.android.style.expressions.Expression.stop(0, org.maplibre.android.style.expressions.Expression.rgba(33, 102, 172, 0)),
-                                org.maplibre.android.style.expressions.Expression.stop(0.2, org.maplibre.android.style.expressions.Expression.rgb(103, 169, 207)),
-                                org.maplibre.android.style.expressions.Expression.stop(0.4, org.maplibre.android.style.expressions.Expression.rgb(209, 229, 240)),
-                                org.maplibre.android.style.expressions.Expression.stop(0.6, org.maplibre.android.style.expressions.Expression.rgb(253, 219, 199)),
-                                org.maplibre.android.style.expressions.Expression.stop(0.8, org.maplibre.android.style.expressions.Expression.rgb(239, 138, 98)),
-                                org.maplibre.android.style.expressions.Expression.stop(1, org.maplibre.android.style.expressions.Expression.rgb(178, 24, 43))
-                        )
-                )
+                PropertyFactory.circleRadius(30f),
+                PropertyFactory.circleColor(android.graphics.Color.parseColor("#E65100")),
+                PropertyFactory.circleBlur(1.5f),
+                PropertyFactory.circleOpacity(0.6f)
         );
         style.addLayerBelow(heatmapLayer, POI_LAYER_ID);
     }
