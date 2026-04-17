@@ -121,7 +121,8 @@ public class ProfileFragment extends Fragment {
         report.put("level", level);
         report.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
 
-        FirebaseFirestore.getInstance().collection("crowd_reports").add(report)
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("crowd_reports").add(report)
                 .addOnSuccessListener(docRef -> {
                     userPoints += 10;
                     if (getView() != null) {
@@ -131,6 +132,39 @@ public class ProfileFragment extends Fragment {
                         }
                     }
                     Toast.makeText(getContext(), "+10 Points! Crowd reported to backend.", Toast.LENGTH_SHORT).show();
+                    
+                    // --- SYNC QUEUE TIMES ---
+                    int tempWaitTime = 5;
+                    String tempTrend = "down";
+                    if (level.equals("Medium")) {
+                        tempWaitTime = 15;
+                        tempTrend = "stable";
+                    } else if (level.equals("High")) {
+                        tempWaitTime = 35;
+                        tempTrend = "up";
+                    }
+                    
+                    final int finalWaitTime = tempWaitTime;
+                    final String finalTrend = tempTrend;
+
+                    db.collection("queues")
+                            .whereEqualTo("name", location)
+                            .get()
+                            .addOnSuccessListener(queryDocumentSnapshots -> {
+                                if (!queryDocumentSnapshots.isEmpty()) {
+                                    // Update existing queue
+                                    String docId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                                    db.collection("queues").document(docId)
+                                            .update("waitTimeMinutes", finalWaitTime, "trend", finalTrend);
+                                } else {
+                                    // Create new queue entry automatically
+                                    Map<String, Object> queueData = new HashMap<>();
+                                    queueData.put("name", location);
+                                    queueData.put("waitTimeMinutes", finalWaitTime);
+                                    queueData.put("trend", finalTrend);
+                                    db.collection("queues").add(queueData);
+                                }
+                            });
                 })
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to report crowd.", Toast.LENGTH_SHORT).show());
     }
