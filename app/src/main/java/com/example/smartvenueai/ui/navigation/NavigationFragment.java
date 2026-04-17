@@ -20,6 +20,11 @@ import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.OnMapReadyCallback;
 import org.maplibre.android.maps.Style;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.maplibre.geojson.Point;
+
 public class NavigationFragment extends Fragment {
 
     private MapView mapView;
@@ -142,28 +147,56 @@ public class NavigationFragment extends Fragment {
         }
     }
 
+    // Defined ordered points representing a complete ring around the stadium edge
+    private final List<Point> concourseRing = Arrays.asList(
+        Point.fromLngLat(72.8258, 18.9396), // 0: Gate C (North)
+        Point.fromLngLat(72.8263, 18.9394), // 1: NE edge
+        Point.fromLngLat(72.8265, 18.9389), // 2: Restroom (East)
+        Point.fromLngLat(72.8262, 18.9385), // 3: Gate B (Southeast)
+        Point.fromLngLat(72.8260, 18.9382), // 4: SE edge
+        Point.fromLngLat(72.8258, 18.9380), // 5: Gate A (South)
+        Point.fromLngLat(72.8254, 18.9381), // 6: SW edge
+        Point.fromLngLat(72.8251, 18.9388), // 7: Food Stall 1 (West)
+        Point.fromLngLat(72.8253, 18.9394)  // 8: NW edge
+    );
+
+    private int getRingIndex(String locName) {
+        if (locName.contains("Gate C")) return 0;
+        if (locName.contains("Restroom")) return 2;
+        if (locName.contains("Gate B")) return 3;
+        if (locName.contains("Gate A")) return 5;
+        if (locName.contains("Food Stall")) return 7;
+        return -1;
+    }
+
     private void drawRoute(Style style) {
         String origin = tvOrigin.getText().toString();
         String dest = tvDestination.getText().toString();
         
-        java.util.List<org.maplibre.geojson.Point> coords = new java.util.ArrayList<>();
-        if (!locations.containsKey(origin) || !locations.containsKey(dest)) return;
-        
-        if (origin.equals("Gate A") && dest.contains("Food Stall")) {
-            coords.add(locations.get(origin));
-            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8254, 18.9381));
-            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8251, 18.9385));
-            coords.add(locations.get(dest));
-        } else if (origin.contains("Food Stall") && dest.equals("Gate A")) {
-            coords.add(locations.get(origin));
-            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8251, 18.9385));
-            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8254, 18.9381));
-            coords.add(locations.get(dest));
+        List<Point> coords = new ArrayList<>();
+        int startIdx = getRingIndex(origin);
+        int endIdx = getRingIndex(dest);
+
+        if (startIdx != -1 && endIdx != -1) {
+            int n = concourseRing.size();
+            int cwDist = (endIdx - startIdx + n) % n;
+            int ccwDist = (startIdx - endIdx + n) % n;
+
+            if (cwDist <= ccwDist) {
+                // Clockwise shortest path
+                for (int i = 0; i <= cwDist; i++) {
+                    coords.add(concourseRing.get((startIdx + i) % n));
+                }
+            } else {
+                // Counter-clockwise shortest path
+                for (int i = 0; i <= ccwDist; i++) {
+                    coords.add(concourseRing.get((startIdx - i + n) % n));
+                }
+            }
         } else {
-            coords.add(locations.get(origin));
-            // Add a mid-point around the center of the stadium for a natural curved visual
-            coords.add(org.maplibre.geojson.Point.fromLngLat(72.8258, 18.9388));
-            coords.add(locations.get(dest));
+            // Fallback (should not be reached)
+            if (locations.containsKey(origin)) coords.add(locations.get(origin));
+            if (locations.containsKey(dest)) coords.add(locations.get(dest));
         }
 
         org.maplibre.geojson.LineString lineString = org.maplibre.geojson.LineString.fromLngLats(coords);

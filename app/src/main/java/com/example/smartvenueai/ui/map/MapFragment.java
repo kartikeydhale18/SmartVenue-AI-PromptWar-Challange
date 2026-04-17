@@ -47,6 +47,8 @@ import org.maplibre.geojson.Point;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 public class MapFragment extends Fragment {
 
@@ -198,21 +200,8 @@ public class MapFragment extends Fragment {
     }
     
     private void addHeatmapLayer(Style style) {
-        // Generating cluster of dummy crowd density data at West Concourse & South Gate
-        List<Feature> crowdPoints = new ArrayList<>();
-        // Cluster 1 (West Concourse / Concession)
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8251, 18.9388)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8252, 18.9387)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8250, 18.9389)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8251, 18.9387)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8252, 18.9388)));
-        // Cluster 2 (South Gate A)
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8258, 18.9380)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8257, 18.9381)));
-        crowdPoints.add(Feature.fromGeometry(Point.fromLngLat(72.8259, 18.9379)));
-
-        FeatureCollection featureCollection = FeatureCollection.fromFeatures(crowdPoints);
-        GeoJsonSource source = new GeoJsonSource(HEATMAP_SOURCE_ID, featureCollection);
+        // Initialize empty source
+        GeoJsonSource source = new GeoJsonSource(HEATMAP_SOURCE_ID, FeatureCollection.fromFeatures(new ArrayList<>()));
         style.addSource(source);
 
         CircleLayer heatmapLayer = new CircleLayer(HEATMAP_LAYER_ID, HEATMAP_SOURCE_ID);
@@ -223,6 +212,36 @@ public class MapFragment extends Fragment {
                 PropertyFactory.circleOpacity(0.6f)
         );
         style.addLayerBelow(heatmapLayer, POI_LAYER_ID);
+
+        // Coordinate dictionary mapping to String names from the reporting form
+        java.util.Map<String, Point> locationMap = new java.util.HashMap<>();
+        locationMap.put("Gate A", Point.fromLngLat(72.8258, 18.9380));
+        locationMap.put("Gate B", Point.fromLngLat(72.8262, 18.9385));
+        locationMap.put("Gate C", Point.fromLngLat(72.8258, 18.9396));
+        locationMap.put("Food Stall 1 (Concession)", Point.fromLngLat(72.8251, 18.9388));
+        locationMap.put("Restroom (Level 1)", Point.fromLngLat(72.8265, 18.9389));
+
+        // Connect to Firestore live feed
+        FirebaseFirestore.getInstance().collection("crowd_reports")
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null) return;
+                    
+                    List<Feature> livePoints = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        String locName = doc.getString("location");
+                        if (locName != null && locationMap.containsKey(locName)) {
+                            // Multiple points on same spot stack their opacity, creating intensity organically!
+                            livePoints.add(Feature.fromGeometry(locationMap.get(locName)));
+                        }
+                    }
+                    
+                    if (mapLibreMap != null && mapLibreMap.getStyle() != null) {
+                        GeoJsonSource liveSource = mapLibreMap.getStyle().getSourceAs(HEATMAP_SOURCE_ID);
+                        if (liveSource != null) {
+                            liveSource.setGeoJson(FeatureCollection.fromFeatures(livePoints));
+                        }
+                    }
+                });
     }
     
     private void addPoiLayer(Style style) {

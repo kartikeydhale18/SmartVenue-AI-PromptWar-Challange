@@ -21,6 +21,8 @@ import com.example.smartvenueai.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProfileFragment extends Fragment {
     
@@ -53,15 +55,8 @@ public class ProfileFragment extends Fragment {
 
         // Report Crowd
         View btnReportCrowd = view.findViewById(R.id.rowReportCrowd);
-        TextView tvRewardText = view.findViewById(R.id.tvRewardText);
         if (btnReportCrowd != null) {
-            btnReportCrowd.setOnClickListener(v -> {
-                userPoints += 10;
-                if (tvRewardText != null) {
-                    tvRewardText.setText(userPoints + " points for crowd reporting");
-                }
-                Toast.makeText(getContext(), "+10 Points! Crowd reported successfully.", Toast.LENGTH_SHORT).show();
-            });
+            btnReportCrowd.setOnClickListener(v -> showReportCrowdDialog());
         }
                 
         // Dark Mode Toggle
@@ -78,6 +73,66 @@ public class ProfileFragment extends Fragment {
                 }
             });
         }
+    }
+
+    private void showReportCrowdDialog() {
+        if (getContext() == null) return;
+
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(getContext());
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(50, 40, 50, 10);
+
+        String[] locations = {"Gate A", "Gate B", "Gate C", "Food Stall 1 (Concession)", "Restroom (Level 1)"};
+        String[] levels = {"Low", "Medium", "High"};
+
+        android.widget.Spinner spinnerLocation = new android.widget.Spinner(getContext());
+        spinnerLocation.setAdapter(new android.widget.ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, locations));
+
+        android.widget.Spinner spinnerLevel = new android.widget.Spinner(getContext());
+        spinnerLevel.setAdapter(new android.widget.ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, levels));
+
+        TextView tvLoc = new TextView(getContext());
+        tvLoc.setText("Select Location:");
+        tvLoc.setPadding(0, 0, 0, 10);
+        layout.addView(tvLoc);
+        layout.addView(spinnerLocation);
+
+        TextView tvLvl = new TextView(getContext());
+        tvLvl.setText("Crowd Level:");
+        tvLvl.setPadding(0, 30, 0, 10);
+        layout.addView(tvLvl);
+        layout.addView(spinnerLevel);
+
+        new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                .setTitle("Report Crowd Congestion")
+                .setView(layout)
+                .setPositiveButton("Report", (dialog, which) -> {
+                    String loc = spinnerLocation.getSelectedItem().toString();
+                    String lvl = spinnerLevel.getSelectedItem().toString();
+                    submitCrowdReport(loc, lvl);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void submitCrowdReport(String location, String level) {
+        Map<String, Object> report = new HashMap<>();
+        report.put("location", location);
+        report.put("level", level);
+        report.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
+
+        FirebaseFirestore.getInstance().collection("crowd_reports").add(report)
+                .addOnSuccessListener(docRef -> {
+                    userPoints += 10;
+                    if (getView() != null) {
+                        TextView tvRewardText = getView().findViewById(R.id.tvRewardText);
+                        if (tvRewardText != null) {
+                            tvRewardText.setText(userPoints + " points for crowd reporting");
+                        }
+                    }
+                    Toast.makeText(getContext(), "+10 Points! Crowd reported to backend.", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to report crowd.", Toast.LENGTH_SHORT).show());
     }
 
     /** Pulls the user's profile from Firestore and populates the UI */
