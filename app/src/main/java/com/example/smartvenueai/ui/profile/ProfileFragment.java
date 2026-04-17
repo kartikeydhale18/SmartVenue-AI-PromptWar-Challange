@@ -45,25 +45,15 @@ public class ProfileFragment extends Fragment {
         // Load real user data from Firestore
         loadUserProfile(view);
 
-        // ── Row click handlers ──────────────────────────────────
-        view.findViewById(R.id.rowPaymentMethods).setOnClickListener(v ->
-                Toast.makeText(getContext(), "Payment Methods coming soon!", Toast.LENGTH_SHORT).show());
-
         // Link Tickets → Complete Profile (to add/edit info)
         view.findViewById(R.id.rowLinkTickets).setOnClickListener(v ->
                 startActivity(new Intent(getActivity(), CompleteProfileActivity.class)));
-
-        view.findViewById(R.id.rowAccessibility).setOnClickListener(v ->
-                Toast.makeText(getContext(), "Accessibility Options coming soon!", Toast.LENGTH_SHORT).show());
-
-        view.findViewById(R.id.rowNotifications).setOnClickListener(v ->
-                Toast.makeText(getContext(), "Notification Settings coming soon!", Toast.LENGTH_SHORT).show());
                 
         // Dark Mode Toggle
         SwitchMaterial switchDarkMode = view.findViewById(R.id.switchDarkMode);
         if (switchDarkMode != null) {
-            int currentMode = AppCompatDelegate.getDefaultNightMode();
-            switchDarkMode.setChecked(currentMode == AppCompatDelegate.MODE_NIGHT_YES);
+            int currentNightMode = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+            switchDarkMode.setChecked(currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES);
             
             switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
@@ -85,6 +75,8 @@ public class ProfileFragment extends Fragment {
         // Show phone number while Firestore loads
         TextView tvName    = view.findViewById(R.id.tvProfileName);
         TextView tvPhone   = view.findViewById(R.id.tvProfilePhone);
+        TextView tvEmail   = view.findViewById(R.id.tvProfileEmail);
+        TextView tvPref    = view.findViewById(R.id.tvProfilePreference);
         TextView tvInitials = view.findViewById(R.id.tvProfileInitials);
 
         // Pre-fill with phone from Firebase Auth
@@ -101,6 +93,8 @@ public class ProfileFragment extends Fragment {
                     if (doc.exists() && getContext() != null) {
                         String name  = doc.getString("fullName");
                         String phone = doc.getString("phone");
+                        String email = doc.getString("email");
+                        String pref  = doc.getString("eventPreference");
 
                         if (!TextUtils.isEmpty(name)) {
                             tvName.setText(name);
@@ -109,6 +103,12 @@ public class ProfileFragment extends Fragment {
                         }
                         if (!TextUtils.isEmpty(phone)) {
                             tvPhone.setText(phone);
+                        }
+                        if (!TextUtils.isEmpty(email)) {
+                            tvEmail.setText(email);
+                        }
+                        if (!TextUtils.isEmpty(pref)) {
+                            tvPref.setText("Preference: " + pref);
                         }
                     }
                 })

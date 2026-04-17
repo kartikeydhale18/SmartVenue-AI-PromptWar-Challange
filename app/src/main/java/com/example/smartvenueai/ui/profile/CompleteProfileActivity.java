@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,8 +25,10 @@ import java.util.Map;
 public class CompleteProfileActivity extends AppCompatActivity {
 
     private TextInputEditText etFullName;
-    private android.widget.EditText etPhone;   // plain EditText (etMobile in layout)
+    private android.widget.EditText etPhone;
+    private TextInputEditText etEmail;
     private AutoCompleteTextView actvLanguage;
+    private RadioGroup rgEventPreference;
     private ProgressBar progressBar;
 
     private FirebaseFirestore db;
@@ -42,9 +46,11 @@ public class CompleteProfileActivity extends AppCompatActivity {
 
         // ── Bind views ──────────────────────────────────────────────
         etFullName    = findViewById(R.id.etFullName);
-        etPhone       = findViewById(R.id.etMobile);       // matches activity_complete_profile.xml
+        etPhone       = findViewById(R.id.etMobile);
+        etEmail       = findViewById(R.id.etEmail);
         actvLanguage  = findViewById(R.id.actvLanguage);
-        progressBar   = findViewById(R.id.progressBarProfile); // may be null if not in XML yet
+        rgEventPreference = findViewById(R.id.rgEventPreference);
+        progressBar   = findViewById(R.id.progressBarProfile);
 
         // Back button
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
@@ -83,8 +89,19 @@ public class CompleteProfileActivity extends AppCompatActivity {
                     if (doc.exists()) {
                         String name = doc.getString("fullName");
                         String lang = doc.getString("language");
+                        String email = doc.getString("email");
+                        String eventPref = doc.getString("eventPreference");
+                        
                         if (!TextUtils.isEmpty(name)) etFullName.setText(name);
-                        if (!TextUtils.isEmpty(lang))  actvLanguage.setText(lang, false);
+                        if (!TextUtils.isEmpty(lang)) actvLanguage.setText(lang, false);
+                        if (!TextUtils.isEmpty(email)) etEmail.setText(email);
+                        
+                        if (!TextUtils.isEmpty(eventPref)) {
+                            if (eventPref.equals("Sports")) ((RadioButton)findViewById(R.id.rbSports)).setChecked(true);
+                            else if (eventPref.equals("Concerts")) ((RadioButton)findViewById(R.id.rbConcerts)).setChecked(true);
+                            else if (eventPref.equals("Conferences")) ((RadioButton)findViewById(R.id.rbConferences)).setChecked(true);
+                            else if (eventPref.equals("Other")) ((RadioButton)findViewById(R.id.rbOther)).setChecked(true);
+                        }
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -94,10 +111,16 @@ public class CompleteProfileActivity extends AppCompatActivity {
 
     /** Validates and saves profile data to Firestore */
     private void saveProfile() {
-        String name = etFullName.getText() != null
-                ? etFullName.getText().toString().trim() : "";
-        String lang = actvLanguage.getText() != null
-                ? actvLanguage.getText().toString().trim() : "";
+        String name = etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
+        String lang = actvLanguage.getText() != null ? actvLanguage.getText().toString().trim() : "";
+        String email = etEmail.getText() != null ? etEmail.getText().toString().trim() : "";
+        
+        String eventPref = "Sports"; // default fallback
+        int selectedId = rgEventPreference.getCheckedRadioButtonId();
+        if (selectedId != -1) {
+            RadioButton selectedRb = findViewById(selectedId);
+            eventPref = selectedRb.getText().toString();
+        }
 
         if (TextUtils.isEmpty(name)) {
             etFullName.setError("Full name is required");
@@ -112,6 +135,8 @@ public class CompleteProfileActivity extends AppCompatActivity {
         Map<String, Object> profileData = new HashMap<>();
         profileData.put("fullName", name);
         profileData.put("language", lang);
+        profileData.put("email", email);
+        profileData.put("eventPreference", eventPref);
         profileData.put("uid", uid);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null && !TextUtils.isEmpty(user.getPhoneNumber())) {

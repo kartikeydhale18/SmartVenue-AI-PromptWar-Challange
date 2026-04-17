@@ -108,15 +108,7 @@ public class MainActivity extends AppCompatActivity {
                     com.example.smartvenueai.ui.profile.CompleteProfileActivity.class));
         });
 
-        findViewById(R.id.drawerSavedVenues).setOnClickListener(v -> {
-            drawerLayout.closeDrawers();
-            Toast.makeText(this, "Saved Venues coming soon!", Toast.LENGTH_SHORT).show();
-        });
 
-        findViewById(R.id.drawerConcessions).setOnClickListener(v -> {
-            drawerLayout.closeDrawers();
-            Toast.makeText(this, "Concessions Payment coming soon!", Toast.LENGTH_SHORT).show();
-        });
 
         // ── Preferences ──────────────────────────────────────────────
         SwitchMaterial switchNotif = findViewById(R.id.switchNotifications);
@@ -127,13 +119,15 @@ public class MainActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show());
         }
 
-        findViewById(R.id.drawerAppearance).setOnClickListener(v ->
-                Toast.makeText(this, "Appearance settings coming soon!",
-                        Toast.LENGTH_SHORT).show());
-
-        findViewById(R.id.drawerLocationSharing).setOnClickListener(v ->
-                Toast.makeText(this, "Location Sharing settings coming soon!",
-                        Toast.LENGTH_SHORT).show());
+        findViewById(R.id.drawerAppearance).setOnClickListener(v -> {
+            int currentNightMode = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+            if (currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
+            } else {
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+            }
+            drawerLayout.closeDrawers();
+        });
 
         // ── System ───────────────────────────────────────────────────
         findViewById(R.id.drawerSettings).setOnClickListener(v ->
