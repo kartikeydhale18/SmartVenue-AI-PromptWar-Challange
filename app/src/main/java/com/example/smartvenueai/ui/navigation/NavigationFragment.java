@@ -25,8 +25,19 @@ import java.util.Arrays;
 import java.util.List;
 import org.maplibre.geojson.Point;
 
+/**
+ * The core pathfinding and routing logic controller for SmartVenue AI.
+ * 
+ * This module dynamically calculates and overlays geodesic polylines 
+ * representing the fastest walking routes within the stadium concourse. 
+ * It employs a deterministic multi-nodal geometry ring array to restrict 
+ * pathing vectors to valid physical walkways, effectively avoiding the 
+ * unmappable inner playfield footprint.
+ * 
+ * <p>Additionally connects to Realtime Queue Firebase references to calculate 
+ * integrated ETA (Estimated Time of Arrival) inclusive of crowdsourced wait times.</p>
+ */
 public class NavigationFragment extends Fragment {
-
     private MapView mapView;
     private android.widget.TextView tvOrigin;
     private android.widget.TextView tvDestination;

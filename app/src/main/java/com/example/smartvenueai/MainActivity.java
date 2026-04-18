@@ -19,6 +19,20 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * The core orchestration activity for the SmartVenue AI application.
+ * This class implements Android's Navigation architecture seamlessly bridging 
+ * MapLibre geodesic engines, Firebase Realtime listeners, and Auth pipelines.
+ * It strictly adheres to Single Activity Architecture (SAA) patterns for 
+ * managing high-performance fragment lifecycle transitions.
+ * 
+ * Includes comprehensive support for Drawer-based user settings and 
+ * BottomNavigationView persistent state management.
+ *
+ * @author SmartVenue Development Team
+ * @version 1.0.0
+ * @since 1.0
+ */
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;

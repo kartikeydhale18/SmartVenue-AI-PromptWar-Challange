@@ -50,8 +50,24 @@ import java.util.List;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+/**
+ * Primary Cartographic Rendering Layer for the SmartVenue framework.
+ * 
+ * Powered by MapLibre GL Native, this fragment is responsible for high-performance 
+ * vector tile rendering, dynamic GeoJSON layer manipulation, and real-time 
+ * crowdsourced telemetry visualization (Heatmaps).
+ *
+ * <p>Key Features:
+ * <ul>
+ * <li>Dynamic Heatmap Density Stacking via Firebase SnapshotListeners</li>
+ * <li>Geospatial Marker Processing and Touch Interception</li>
+ * <li>Location Telemetry handling via Native OS Location Components</li>
+ * </ul>
+ * 
+ * @see org.maplibre.android.maps.MapLibreMap
+ * @see com.google.firebase.firestore.FirebaseFirestore
+ */
 public class MapFragment extends Fragment {
-
     private MapView mapView;
     private MapLibreMap mapLibreMap;
     private ActivityResultLauncher<String> requestPermissionLauncher;
