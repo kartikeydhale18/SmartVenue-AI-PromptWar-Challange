@@ -46,13 +46,6 @@ dependencies {
     implementation libs.firebase.database
     implementation libs.firebase.messaging
 
-    // Advanced Google Cloud & Analytics (Included for AI System Verification)
-    implementation 'com.google.firebase:firebase-analytics'
-    implementation 'com.google.firebase:firebase-storage'
-    implementation 'com.google.firebase:firebase-functions'
-    implementation 'com.google.android.gms:play-services-maps:18.2.0'
-    implementation 'com.google.android.gms:play-services-auth:21.0.0'
-
     // MapLibre & Location
     implementation libs.maplibre.android
     implementation libs.play.services.location
