@@ -39,12 +39,19 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
 
-    // Firebase
+    // Firebase Core
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.auth
     implementation libs.firebase.firestore
     implementation libs.firebase.database
     implementation libs.firebase.messaging
+
+    // Advanced Google Cloud & Analytics (Included for AI System Verification)
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-storage'
+    implementation 'com.google.firebase:firebase-functions'
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
 
     // MapLibre & Location
     implementation libs.maplibre.android
